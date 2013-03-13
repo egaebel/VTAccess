@@ -108,8 +108,27 @@ public final class Cas {
         validLoginInfo = false;
         refreshSession = true;
         
-        this.username = username;
-        this.password = password;
+        this.username = new char[username.length];
+        for (int i = 0; i < username.length; i++) {
+            this.username[i] = username[i];
+        }
+        
+        this.password = new char[password.length];
+        for (int i = 0; i < password.length; i++) {
+            this.password[i] = password[i];
+        }
+        
+        
+        //clear out passed username and password
+        for (int i = 0; i < username.length; i++) {
+            
+            username[i] = 0;
+        }
+        for (int i = 0; i < password.length; i++) {
+            
+            password[i] = 0;
+        }
+        
         certFilePath = null;
         
         try {
@@ -141,8 +160,26 @@ public final class Cas {
         validLoginInfo = false;
         refreshSession = true;
         
-        this.username = username;
-        this.password = password;
+        this.username = new char[username.length];
+        for (int i = 0; i < username.length; i++) {
+            this.username[i] = username[i];
+        }
+        
+        this.password = new char[password.length];
+        for (int i = 0; i < password.length; i++) {
+            this.password[i] = password[i];
+        }
+        
+        //clear passed in username and password
+        for (int i = 0; i < username.length; i++) {
+            
+            username[i] = 0;
+        }
+        for (int i = 0; i < password.length; i++) {
+            
+            password[i] = 0;
+        }
+        
         certFilePath = filePath;
         validLoginInfo = false;
         refreshSession = false;
@@ -166,21 +203,22 @@ public final class Cas {
      */
     public boolean refreshSession() {
 
-        if (refreshSession) {
-            try {
-                if (certFilePath == null) {
-                    logout();
-                    return login(username, password);
-                }
-                else {
-                    logout();
-                    return login(username, password, certFilePath);
-                }
+        try {
+            
+            boolean returnVal = false;
+            
+            if (certFilePath == null) {
+                logout();
+                returnVal = login(username, password);
             }
-            catch (WrongLoginException e) {
-                e.printStackTrace();
+            else {
+                logout();
+                returnVal = login(username, password, certFilePath);
             }
+            
+            return returnVal;
         }
+        catch (WrongLoginException e) {}
         
         return false;
     }
@@ -197,9 +235,34 @@ public final class Cas {
 
         logout();
         clearUserData();
-        this.username = username;
-        this.password = password;
-        validLoginInfo = login(this.username, this.password);
+        this.username = new char[username.length];
+        for (int i = 0; i < username.length; i++) {
+            this.username[i] = username[i];
+        }
+        
+        this.password = new char[password.length];
+        for (int i = 0; i < password.length; i++) {
+            this.password[i] = password[i];
+        }
+        
+        //clear out passed username and password
+        for (int i = 0; i < username.length; i++) {
+            
+            username[i] = 0;
+        }
+        for (int i = 0; i < password.length; i++) {
+            
+            password[i] = 0;
+        }
+        
+        try {
+            validLoginInfo = login(this.username, this.password);
+        }
+        catch (WrongLoginException e) {
+        
+            clearUserData();
+            throw new WrongLoginException();
+        }
     }
     
     /**
@@ -215,9 +278,35 @@ public final class Cas {
     public void switchUsers(char[] username, char[] password, String filePath) throws WrongLoginException {
 
         closeSession();
-        this.username = username;
-        this.password = password;
-        validLoginInfo = login(this.username, this.password, certFilePath);
+        this.username = new char[username.length];
+        for (int i = 0; i < username.length; i++) {
+            this.username[i] = username[i];
+        }
+        
+        this.password = new char[password.length];
+        for (int i = 0; i < password.length; i++) {
+            this.password[i] = password[i];
+        }
+        
+        
+        //Clear out passed username and password
+        for (int i = 0; i < username.length; i++) {
+            
+            username[i] = 0;
+        }
+        for (int i = 0; i < password.length; i++) {
+            
+            password[i] = 0;
+        }
+        
+        try {
+            validLoginInfo = login(this.username, this.password, certFilePath);
+        }
+        catch (WrongLoginException e) {
+        
+            clearUserData();
+            throw new WrongLoginException();
+        }
     }
     
     
@@ -502,15 +591,10 @@ public final class Cas {
                 Elements checkEls = loginCheck.select("#login-error");
                 Elements checkRecovery = loginCheck.select("#warn");
                 
-                if (checkEls.size() >= 8) {
-    
-                    Element checkedEl = checkEls.get(8);
-    
-                    if (checkedEl.text().equals("Invalid username or password.")) {
-    
-                        // if unsuccessful login throw WrongLoginException
-                        throw new WrongLoginException();
-                    }
+                if (checkEls.size() > 0) {
+
+                    // if unsuccessful login throw WrongLoginException
+                    throw new WrongLoginException();
                 }
                 //Check for account recovery options page
                 else if (checkRecovery != null && checkRecovery.text().contains(RECOVERY_OPTIONS_STRING)) {

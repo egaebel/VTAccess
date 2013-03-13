@@ -1,3 +1,2 @@
 Manifest-Version: 1.0
-Class-Path: "C:\Users\ethan\Documents\ACTUAL My Documents\Libraries\Java Libraries\jsoup\jsoup-1.6.3.jar"
-
+Class-Path: jsoup-1.6.3.jar

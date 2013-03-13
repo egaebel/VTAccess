@@ -184,12 +184,12 @@ public class ScheduleScraper {
      */
     public boolean retrieveSchedule(Schedule schedule, String semesterCode) throws HokieSpaTimeoutException {
         
+        Map<String, String> cookies = cas.getCookies();
+        
         //If the Cas object has cookies
-        if (cas.isActive() && cas.getCookies() != null && schedule != null && semesterCode != null) {
+        if (cas.isActive() && cookies != null && schedule != null && semesterCode != null) {
             try {
 
-                Map<String, String> cookies = cas.getCookies();
-                
                 if (cookies.get("IDMSESSID") != null) {
                     
                     // to get the cookies that are updated with the click
@@ -248,19 +248,6 @@ public class ScheduleScraper {
         
                             // course name
                             course.setName(tempName);
-                            
-                            //get course code
-                            //TODO Find out if * Additional Times * courses are ALWAYS lacking a courseCode
-                            /*tempCourseCode = cols.get(1).text();
-                            courseCodeParts = Course.splitCourseCode(tempCourseCode);
-                            
-                            //ensure that course code was formatted properly
-                            if (courseCodeParts != null && courseCodeParts.length == 2) {
-
-                                course.setSubjectCode(courseCodeParts[0]);
-                                course.setCourseNumber(courseCodeParts[1]);
-                            }
-                            */
         
                             // times
                             timeString[0] = cols.get(4).text();
@@ -403,9 +390,11 @@ public class ScheduleScraper {
                             }
                         }
                     }
+                    
+                    return true;
                 }
                 
-                return true;
+                return false;
             }
             catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -443,10 +432,10 @@ public class ScheduleScraper {
     public boolean retrieveExamSchedule(String semesterCode,
             List<Course> examList) {
 
-        if (cas.isActive()) {
+        Map<String, String> cookies = cas.getCookies();
         
-            Map<String, String> cookies = cas.getCookies();
-            
+        if (cas.isActive() && cookies != null && semesterCode != null && examList != null) {
+        
             Course additive;
     
             try {
@@ -469,51 +458,54 @@ public class ScheduleScraper {
     
                 // the Elements that will get down to the needed fields
                 Elements table = hokieDoc.select("body table");
-                Elements rows = table.get(1).select("tr");
-                Elements cols;
-    
-                // the strings that will be used to construct the url for the pages
-                // holding the exam information
-                String crn;
-                String[] course;
-                String examID;
-                String name;
-    
-                // the first 2 rows hold formatting information
-                // therefore course information stats in the 3rd row (2)
-                for (int i = 2; i < (rows.size() - 1); i++) {
-    
-                    cols = rows.get(i).select("td");
-    
-                    // the row is weird, it doesn't have course name, and column
-                    // numbers are off
-                    if (cols.get(2).text().equals("* Additional Times *")) {
+                if (table.size() > 1) {
                     
-                        name = "";
-                    }
-                    else {
+                    Elements rows = table.get(1).select("tr");
+                    Elements cols;
+        
+                    // the strings that will be used to construct the url for the pages
+                    // holding the exam information
+                    String crn;
+                    String[] course;
+                    String examID;
+                    String name;
+        
+                    // the first 2 rows hold formatting information
+                    // therefore course information stats in the 3rd row (2)
+                    for (int i = 2; i < (rows.size() - 1); i++) {
+        
+                        cols = rows.get(i).select("td");
+        
+                        // the row is weird, it doesn't have course name, and column
+                        // numbers are off
+                        if (cols.get(2).text().equals("* Additional Times *")) {
                         
-                        name = cols.get(2).text();
-                    
-                        crn = cols.get(0).text();
-                        course = cols.get(1).text().split(" ");
-                        if (cols.size() >= 10) {
+                            name = "";
+                        }
+                        else {
                             
-                            examID = cols.get(9).text();
-                            
-                            // get the course from the retrieveExamTimes method
-                            additive = retrieveExamTimes(name, crn, course[0], course[1],
-                                    semesterCode, examID);
-                            
-                            // check for null course
-                            if (additive != null) {
-                                examList.add(additive);
+                            name = cols.get(2).text();
+                        
+                            crn = cols.get(0).text();
+                            course = cols.get(1).text().split(" ");
+                            if (cols.size() >= 10) {
+                                
+                                examID = cols.get(9).text();
+                                
+                                // get the course from the retrieveExamTimes method
+                                additive = retrieveExamTimes(name, crn, course[0], course[1],
+                                        semesterCode, examID, cookies);
+                                
+                                // check for null course
+                                if (additive != null) {
+                                    examList.add(additive);
+                                }
                             }
                         }
                     }
+    
+                    return true;
                 }
-
-                return true;
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -547,11 +539,13 @@ public class ScheduleScraper {
      *            Null if there are any errors.
      */
     public Course retrieveExamTimes(String name, String crn, String courseID,
-            String courseNum, String semesterCode, String examID) {
+            String courseNum, String semesterCode, String examID, 
+            Map<String, String> cookies) {
 
-        if (cas.getCookies() != null) {
+        if (cookies != null && name != null && crn != null 
+                && courseID != null && courseNum != null 
+                && semesterCode != null && examID != null) {
         
-            Map<String, String> cookies = cas.getCookies();
             Course course;
     
             try {
