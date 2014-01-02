@@ -17,6 +17,13 @@ import junit.framework.TestCase;
  */
 public class CasTest extends TestCase {
 
+    //~Constants----------------------------------------------
+    private static final String SPRING_CODE = "201301";
+    private static final String FALL_CODE = "201209";
+    private static final String username = "";
+    private static final String password = "";
+    private static final String filePath = "";
+    
     //~Data Fields--------------------------------------------
     private Schedule emptySchedule;
 
@@ -57,15 +64,17 @@ public class CasTest extends TestCase {
         Schedule s1 = new Schedule();
         Schedule s2 = new Schedule();
         Schedule s3 = new Schedule();
+        
+        //Pull Courses into 3 different schedules
         assertTrue(s.retrieveSchedule(s1, SPRING_CODE));
         assertTrue(s.retrieveSchedule(s2, FALL_CODE));
-
-
         assertTrue(s.retrieveSchedule(s3, FALL_CODE));
+        
         assertNotSame(s3.getAllCourses().toString(), "");
         assertEquals(s3.getAllCourses().toString(), s2.getAllCourses().toString());
         s3 = new Schedule();
 
+        //replace s3 with the next code
         assertTrue(s.retrieveSchedule(s3, Semester.nextSemesterCode(FALL_CODE)));
         assertNotSame(s3.getAllCourses().toString(), "");
         assertEquals(s3.getAllCourses().toString(), s1.getAllCourses().toString());
@@ -86,14 +95,16 @@ public class CasTest extends TestCase {
         //Finals stuff
         List<Course> finalsList1 = new LinkedList<Course>();
         List<Course> finalsList2 = new LinkedList<Course>();
+        
         assertTrue(s.retrieveExamSchedule(SPRING_CODE, finalsList1));
-        assertTrue(finalsList1.size() > 0);
         System.out.println("retrieve exam schedule 1 RESULTES!!!\n" + finalsList1.toString());
+        assertTrue(finalsList1.size() > 0);
+        
         assertTrue(s.retrieveExamSchedule(SPRING_CODE, finalsList2));
-        assertTrue(finalsList2.size() > 0);
         System.out.println("retrieve exam schedule 2 RESULTES!!!\n" + finalsList2.toString());
+        assertTrue(finalsList2.size() > 0);
 
-
+        System.out.println("COMPARISON");
         System.out.println(finalsList1.toString());
         System.out.println(finalsList2.toString());
     }
@@ -113,6 +124,7 @@ public class CasTest extends TestCase {
         catch (WrongLoginException e) {
             e.printStackTrace();
             System.out.println("ERROR!!!!");
+            assertTrue(false);
         }
 
         Schedule schedule = new Schedule();
@@ -120,6 +132,10 @@ public class CasTest extends TestCase {
 
         scheduleScraper.retrieveSchedule(schedule, semester);
 
+        System.out.println("The schedule pulled in testLoginNoPath:");
+        System.out.println(schedule.toXML());
+        System.out.println("\n\n");
+        
         assertTrue(!schedule.toXML().equals(emptySchedule.toXML()));
 
         assertTrue(cas.isActive());
@@ -132,6 +148,7 @@ public class CasTest extends TestCase {
     }
 
     public void testLoginPath() throws HokieSpaTimeoutException {
+        
         System.out.println("TEST LOGIN, WITH PATH");
         Cas cas = null;
         ScheduleScraper scheduleScraper = null;
@@ -224,10 +241,4 @@ public class CasTest extends TestCase {
 
         assertTrue(except != null);
     }
-
-    private static final String SPRING_CODE = "201301";
-    private static final String FALL_CODE = "201209";
-    private static final String username = "";
-    private static final String password = "";
-    private static final String filePath = "";
 }

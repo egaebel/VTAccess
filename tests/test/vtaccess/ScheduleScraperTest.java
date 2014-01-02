@@ -14,7 +14,8 @@ import junit.framework.TestCase;
 public class ScheduleScraperTest extends TestCase {
 
     //~Constants----------------------------------------------
-
+    private static final String username = "";
+    private static final String password = "";
 
     //~Data Fields--------------------------------------------
 
@@ -44,7 +45,7 @@ public class ScheduleScraperTest extends TestCase {
             Schedule schedule7 = new Schedule();
             Schedule emptySchedule = new Schedule();
 
-            scheduleScraper.retrieveSchedule(schedule, "201209");
+            assertTrue(scheduleScraper.retrieveSchedule(schedule, "201209"));
             assertTrue(!schedule.toXML().equals(emptySchedule.toXML()));
             System.out.println("GENERAL TEST PASSED!");
 
@@ -114,9 +115,11 @@ public class ScheduleScraperTest extends TestCase {
             List<Course> finals7 = new LinkedList<Course>();
             Course emptyCourse = new Course();
 
-            scheduleScraper.retrieveExamSchedule("201209", finals1);
+            assertTrue(scheduleScraper.retrieveExamSchedule("201209", finals1));
+            assertTrue(finals1.size() > 0);
             for (Course course : finals1) {
                 assertTrue(!course.toXML().equals(emptyCourse.toXML()));
+                System.out.println(emptyCourse.toXML());
             }
             System.out.println("GENERAL TEST PASSED!");
 
@@ -175,7 +178,4 @@ public class ScheduleScraperTest extends TestCase {
             e.printStackTrace();
         }
     }
-
-    String username = "";
-    String password = "";
 }

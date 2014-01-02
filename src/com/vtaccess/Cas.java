@@ -35,7 +35,7 @@ public final class Cas {
     /**
      * the users agents to pass along with the response
      */
-    private static final String AGENTS = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0";
+    private static final String AGENTS = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.116 Safari/537.36";
     /**
      * The url for hokiespa to login at.
      */
@@ -48,6 +48,10 @@ public final class Cas {
      * String to check for recovery options screen with.
      */
     private static final String RECOVERY_OPTIONS_STRING = "You have not updated account recovery options in the past";
+    /**
+     * The URL to login to CAS when the recovery options need to be picked up.
+     */
+    private static final String RECOVERY_OPTIONS_LOGIN = "https://banweb.banner.vt.edu/ssb/prod/twbkwbis.P_GenMenu?name=bmenu.P_MainMnu";
     
     //~Data Fields---------------------------------------------
     /**
@@ -429,80 +433,7 @@ public final class Cas {
 
                 System.setProperty("javax.net.ssl.trustStore", cert.getAbsolutePath());
     
-                // get three hidden fields, and cookies from initial Login Page
-                Response loginPageResp = Jsoup.connect(LOGIN).execute();
-    
-                // save JSESSION cookie from the LOGIN URL's response
-                cookies = loginPageResp.cookies();
-    
-                // get the document from the response to retrieve hidden fields
-                Document doc = loginPageResp.parse();
-    
-                // select the correct div section under form-->fieldset
-                // Element form = doc.select("form").first();
-                Elements divs = doc.select("form fieldset div");
-                Element div6 = divs.get(5);
-    
-                // hashmap to hold hiddenFields in document, as well as username,
-                // password
-                Map<String, String> hiddenFields = new HashMap<String, String>();
-    
-                // place hidden fields & _submit into hashmap for passing
-                hiddenFields.put("lt", div6.getElementsByIndexEquals(0).val());
-                hiddenFields.put("execution", div6.getElementsByIndexEquals(1)
-                        .val());
-                hiddenFields
-                        .put("_eventId", div6.getElementsByIndexEquals(2).val());
-    
-                // will always be this value on the CAS page
-                hiddenFields.put("submit", "_submit");
-    
-                // place username and password into hashmap for passing
-                hiddenFields.put("username", String.copyValueOf(username));
-                hiddenFields.put("password", String.copyValueOf(password));
-    
-                // enter in the hidden fields as well as username and pasword --
-                // press submit, USE GET METHOD!!!
-                Response resp = Jsoup
-                        .connect(LOGIN)
-                        .data(hiddenFields)
-                        .cookie("JSESSIONID", cookies.get("JSESSIONID"))
-                        .method(Method.GET)
-                        .header("Content-Type", "application/x-www-form-urlencoded")
-                        .referrer(LOGIN).userAgent(AGENTS).execute();
-    
-                // get all cookies from the resp generated above to use in future
-                // authentication
-                cookies.putAll(resp.cookies());
-    
-                Document loginCheck = resp.parse();
-    
-                // check to see if the login was successful
-                Elements checkLoginEls = loginCheck.select("#login-error");
-                Elements checkRecoveryEls = loginCheck.select("#warn");
-                
-                //check for correct username/password
-                if (checkLoginEls.size() > 0) {
-    
-                    throw new WrongLoginException();
-                }
-                //check for recovery options warning
-                else if (checkRecoveryEls.size() > 0 && checkRecoveryEls.get(0).text().trim().contains(RECOVERY_OPTIONS_STRING)) {
-                    
-                    resp = Jsoup.connect(resp.url().toString())
-                            .cookies(hiddenFields)
-                            .cookie("JSESSIONID", cookies.get("JSESSIONID"))
-                            .method(Method.GET)
-                            .header("Content-Type", "application/x-www-form-urlencoded")
-                            .userAgent(AGENTS).execute();
-                    
-                    cookies.putAll(resp.cookies());
-                }
-    
-                active = true;
-                refreshSession = false;
-
-                return true;
+                return loginHelper(username, password);
             }
         }
         catch (SocketTimeoutException e) {
@@ -538,81 +469,8 @@ public final class Cas {
             if(grabCertificate(filePath)) {
             
                 System.setProperty("javax.net.ssl.trustStore", cert.getAbsolutePath());
-    
-                // get three hidden fields, and cookies from initial Login Page
-                Response loginPageResp = Jsoup.connect(LOGIN).execute();
-    
-                // save JSESSION cookie from the LOGIN URL's response
-                cookies = loginPageResp.cookies();
-    
-                // get the document from the response to retrieve hidden fields
-                Document doc = loginPageResp.parse();
-    
-                // select the correct div section under form-->fieldset
-                // Element form = doc.select("form").first();
-                Elements divs = doc.select("form fieldset div");
-                Element div6 = divs.get(5);
-    
-                // hashmap to hold hiddenFields in document, as well as username,
-                // password
-                Map<String, String> hiddenFields = new HashMap<String, String>();
-    
-                // place hidden fields & _submit into hashmap for passing
-                hiddenFields.put("lt", div6.getElementsByIndexEquals(0).val());
-                hiddenFields.put("execution", div6.getElementsByIndexEquals(1)
-                        .val());
-                hiddenFields
-                        .put("_eventId", div6.getElementsByIndexEquals(2).val());
-    
-                // will always be this value on the CAS page
-                hiddenFields.put("submit", "_submit");
-    
-                // place username and password into hashmap for passing
-                hiddenFields.put("username", String.copyValueOf(username));
-                hiddenFields.put("password", String.copyValueOf(password));
-    
-                // enter in the hidden fields as well as username and pasword --
-                // press submit, USE GET METHOD!!!
-                Response resp = Jsoup
-                        .connect(LOGIN)
-                        .data(hiddenFields)
-                        .cookie("JSESSIONID", cookies.get("JSESSIONID"))
-                        .method(Method.GET)
-                        .header("Content-Type", "application/x-www-form-urlencoded")
-                        .referrer(LOGIN).userAgent(AGENTS).execute();
-    
-                // get all cookies from the resp generated above to use in future
-                // authentication
-                cookies.putAll(resp.cookies());
-    
-                Document loginCheck = resp.parse();
-    
-                // check to see if the login was successful, that is, had a correct PASSWORD and USERNAME
-                Elements checkEls = loginCheck.select("#login-error");
-                Elements checkRecovery = loginCheck.select("#warn");
                 
-                if (checkEls.size() > 0) {
-
-                    // if unsuccessful login throw WrongLoginException
-                    throw new WrongLoginException();
-                }
-                //Check for account recovery options page
-                else if (checkRecovery != null && checkRecovery.text().contains(RECOVERY_OPTIONS_STRING)) {
-                                        
-                    resp = Jsoup.connect(resp.url().toString())
-                            .cookies(hiddenFields)
-                            .cookie("JSESSIONID", cookies.get("JSESSIONID"))
-                            .method(Method.GET)
-                            .header("Content-Type", "application/x-www-form-urlencoded")
-                            .userAgent(AGENTS).execute();
-                    
-                    cookies.putAll(resp.cookies());
-                }
-    
-                active = true;
-                refreshSession = false;
-                
-                return true;
+                return loginHelper(username, password);
             }
         }
         catch (SocketTimeoutException e) {
@@ -624,6 +482,89 @@ public final class Cas {
         }
 
         return false;
+    }
+    
+    private boolean loginHelper(char[] username, char[] password) throws IOException, WrongLoginException {
+        
+        // get three hidden fields, and cookies from initial Login Page
+        Response loginPageResp = Jsoup.connect(LOGIN).execute();
+
+        // save JSESSION cookie from the LOGIN URL's response
+        cookies = loginPageResp.cookies();
+
+        // get the document from the response to retrieve hidden fields
+        Document doc = loginPageResp.parse();
+
+        // select the correct div section under form-->fieldset
+        Elements divs = doc.select("form fieldset div");
+        Element div6 = divs.get(5);
+
+        // hashmap to hold hiddenFields in document, as well as username,
+        // password
+        Map<String, String> hiddenFields = new HashMap<String, String>();
+
+        // place hidden fields & _submit into hashmap for passing
+        hiddenFields.put("lt", div6.getElementsByIndexEquals(0).val());
+        hiddenFields.put("execution", div6.getElementsByIndexEquals(1)
+                .val());
+        hiddenFields
+                .put("_eventId", div6.getElementsByIndexEquals(2).val());
+
+        // will always be this value on the CAS page
+        hiddenFields.put("submit", "_submit");
+
+        // place username and password into hashmap for passing
+        hiddenFields.put("username", String.copyValueOf(username));
+        hiddenFields.put("password", String.copyValueOf(password));
+
+        // enter in the hidden fields as well as username and pasword --
+        // press submit, USE GET METHOD!!!
+        Response resp = Jsoup
+                .connect(LOGIN)
+                .data(hiddenFields)
+                .cookie("JSESSIONID", cookies.get("JSESSIONID"))
+                .method(Method.GET)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .referrer(LOGIN)
+                .userAgent(AGENTS)
+                .execute();
+
+        // get all cookies from the resp generated above to use in future
+        // authentication
+        cookies.putAll(resp.cookies());
+
+        Document loginCheck = resp.parse();
+
+        // check to see if the login was successful
+        Elements checkLoginEls = loginCheck.select("#login-error");
+        Elements checkRecovery = loginCheck.select("#warn");
+
+        //check for correct username/password
+        if (checkLoginEls.size() >= 8) {
+
+            Element checkedEl = checkLoginEls.get(8);
+
+            if (checkedEl.text().equals("Invalid username or password.")) {
+
+                // if unsuccessful login throw WrongLoginException
+                throw new WrongLoginException();
+            }
+        }
+        else if (checkLoginEls.size() == 1) {
+            
+            Element checkedEl = checkLoginEls.get(0);
+            
+            if (checkedEl.text().equals("Invalid username or password.")) {
+
+                // if unsuccessful login throw WrongLoginException
+                throw new WrongLoginException();
+            }
+        }
+
+        active = true;
+        refreshSession = false;
+
+        return true;
     }
 
     /**

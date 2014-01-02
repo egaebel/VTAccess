@@ -25,8 +25,9 @@ public class CourseInformationTests extends TestCase {
      * The URL of the VT Course timetable.
      */                                                  
     public static final String NO_LOGIN_TIMETABLE_URL = "https://banweb.banner.vt.edu/ssb/prod/HZSKVTSC.P_ProcRequest";
-    public static final String FALL_2012_CODE = "201209";
-    public static final String SPRING_2013_CODE = "201301";
+    //TODO: Before running, ensure that these are current
+    public static final String FALL_2012_CODE = "201309";
+    public static final String SPRING_2013_CODE = "201401";
     //~Data Fields--------------------------------------------
 
 
@@ -282,7 +283,9 @@ public class CourseInformationTests extends TestCase {
         }
     }*/
     /*
-    //NOTE MUST ENTER username and password to run test
+    //~------------------------------------------------------------------------
+    //TODO: NOTE MUST ENTER username and password to run test------------------
+    //~------------------------------------------------------------------------
     public void testPostrequisitesWithMyCoursesSPRING() throws WrongLoginException, HokieSpaTimeoutException {
         
         char[] username = myUsername.toCharArray();

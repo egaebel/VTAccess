@@ -196,14 +196,18 @@ public class ScheduleScraper {
                     Response hokieResp = Jsoup
                             .connect(HOKIESTOP + semesterCode + ENDOFURL)
                             .cookie("IDMSESSID", cookies.get("IDMSESSID"))
-                            .userAgent(AGENTS).method(Method.GET).execute();
+                            .cookie("SESSID", cookies.get("SESSID"))
+                            .userAgent(AGENTS)
+                            .method(Method.GET)
+                            .execute();
         
                     cookies.put("SESSID", hokieResp.cookies().get("SESSID"));
         
                     // go to the detailed schedule page
                     Document hokieDoc = Jsoup.connect(HOKIESPA + semesterCode)
                             .cookie("IDMSESSID", cookies.get("IDMSESSID"))
-                            .cookie("SESSID", cookies.get("SESSID")).userAgent(AGENTS)
+                            .cookie("SESSID", cookies.get("SESSID"))
+                            .userAgent(AGENTS)
                             .referrer(HOKIESTOP + semesterCode + ENDOFURL)
                             .post();
                     
@@ -440,11 +444,19 @@ public class ScheduleScraper {
     
             try {
     
+                if (cookies.get("IDMSESSID") == null) {
+                    cas.closeSession();
+                    return false;
+                }
+                
                 // to get the cookies that are updated with the click
                 Response hokieResp = Jsoup
                         .connect(HOKIESTOP + semesterCode + ENDOFURL)
                         .cookie("IDMSESSID", cookies.get("IDMSESSID"))
-                        .userAgent(AGENTS).method(Method.GET).execute();
+                        .cookie("SESSID", cookies.get("SESSID"))
+                        .userAgent(AGENTS)
+                        .method(Method.GET)
+                        .execute();
     
                 cookies.put("SESSID", hokieResp.cookies().get("SESSID"));
     
