@@ -107,7 +107,9 @@ public class CourseInfo {
             
             cols = rows.get(j).select("td");
 
-            if (cols.size() > 1) {
+            //Changed to 2 because of the odd placement of the Washington location for some ARCH courses
+            if (cols.size() > 2) {
+                
                 //If EXTRA class (lab recitation etc
                 if (cols.get(4).text().contains("Additional Times")) {
                     

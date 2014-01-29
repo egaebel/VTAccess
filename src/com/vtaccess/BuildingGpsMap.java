@@ -41,6 +41,9 @@ public class BuildingGpsMap {
     protected Map<String, Point> buildings;
     
     //~Constructors--------------------------------------------
+    
+    
+    
     /**
      * Assigns the building abbreviations with Points and adds them to the Map
      * 
@@ -48,6 +51,8 @@ public class BuildingGpsMap {
     public BuildingGpsMap() {
         
         buildings = new HashMap<String, Point>();
+        
+        buildings.put("AA", new Point((int) (37.2286 * 1000000), (int) (-80.41629 * 1000000)));
         
         buildings.put("MCB", new Point((int) (37.230311 * 1000000), (int) (-80.421771 * 1000000)));
         buildings.put("DER", new Point((int) (37.229064 * 1000000), (int) (-80.425504 * 1000000)));
