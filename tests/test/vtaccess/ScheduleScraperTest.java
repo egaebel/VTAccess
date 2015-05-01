@@ -25,7 +25,7 @@ public class ScheduleScraperTest extends TestCase {
 
     //~Methods-------------------------------------------------
     /**
-     * TO RUN THIS TEST YOU MUST PLACE A VALID HOKIESPA USERNAME AND PASSWORD IN THE APPROPRIATE FIELDS BELOW
+     * TO RUN THIS TEST YOU MUST PLACE A VALID HOKIESPA USERNAME AND PASSWORD IN THE APPROPRIATE FIELDS ABOVE
      */
     public void testRetrieveSchedule() {
         System.out.println("-----BEGIN RETRIEVE SCHEDULE TEST-----------");
@@ -56,7 +56,7 @@ public class ScheduleScraperTest extends TestCase {
             System.out.println("FAILURE TESTS PASSED!");
 
             //far out of range case! (schedule 2)
-            assertFalse(scheduleScraper.retrieveSchedule(schedule2, "201409"));
+            assertFalse(scheduleScraper.retrieveSchedule(schedule2, "209909"));
             assertTrue(schedule2.toXML().equals(emptySchedule.toXML()));
             System.out.println("FUTURE SEMESTERCODE TEST PASSED!");
 
@@ -102,6 +102,8 @@ public class ScheduleScraperTest extends TestCase {
         Cas cas = null;
         ScheduleScraper scheduleScraper = null;
 
+        String currentSemesterCode = "201501";
+        
         try {
             cas = new Cas(username.toCharArray(), password.toCharArray());
             scheduleScraper = new ScheduleScraper(cas);
@@ -115,7 +117,7 @@ public class ScheduleScraperTest extends TestCase {
             List<Course> finals7 = new LinkedList<Course>();
             Course emptyCourse = new Course();
 
-            assertTrue(scheduleScraper.retrieveExamSchedule("201209", finals1));
+            assertTrue(scheduleScraper.retrieveExamSchedule(currentSemesterCode, finals1));
             assertTrue(finals1.size() > 0);
             for (Course course : finals1) {
                 assertTrue(!course.toXML().equals(emptyCourse.toXML()));
@@ -124,13 +126,13 @@ public class ScheduleScraperTest extends TestCase {
             System.out.println("GENERAL TEST PASSED!");
 
             //Failure cases
-            assertFalse(scheduleScraper.retrieveExamSchedule("201209", null));
+            assertFalse(scheduleScraper.retrieveExamSchedule(currentSemesterCode, null));
             assertFalse(scheduleScraper.retrieveExamSchedule(null, finals1));
             assertFalse(scheduleScraper.retrieveExamSchedule(null, null));
             System.out.println("FAILURE TESTS PASSED!");
 
             //far out of range case! (schedule 2)
-            assertFalse(scheduleScraper.retrieveExamSchedule("201409", finals2));
+            assertFalse(scheduleScraper.retrieveExamSchedule("209909", finals2));
             for (Course course : finals2)
                 assertTrue(course.toXML().equals(emptyCourse.toXML()));
             System.out.println("FUTURE SEMESTERCODE TEST PASSED!");

@@ -39,7 +39,11 @@ public final class Cas {
     /**
      * The url for hokiespa to login at.
      */
-    private static final String LOGIN = "https://auth.vt.edu/login?service=https://webapps.banner.vt.edu/banner-cas-prod/authorized/banner/SelfService";
+    private static final String HOKIESPA_LOGIN = "https://auth.vt.edu/login?service=https://webapps.banner.vt.edu/banner-cas-prod/authorized/banner/SelfService";
+    /**
+     * The url for the Timeclock to login at.
+     */
+    private static final String TIMECLOCK_LOGIN = "https://auth.vt.edu/login?TARGET=https%3a%2f%2ftimeclock.vt.edu%2fwebclock30%2fdefault.aspx&renew=true";
     /**
      * The URL to logout of CAS entirely.
      */
@@ -336,7 +340,7 @@ public final class Cas {
     private boolean grabCertificate() {
         
         try {
-            URL url = new URL(LOGIN);
+            URL url = new URL(HOKIESPA_LOGIN);
             HttpsURLConnection connect = (HttpsURLConnection)url.openConnection();
             connect.connect();
             Certificate[] certs = connect.getServerCertificates();
@@ -380,7 +384,7 @@ public final class Cas {
     private boolean grabCertificate(String filePath) {
         
         try {
-            URL url = new URL(LOGIN);
+            URL url = new URL(HOKIESPA_LOGIN);
             HttpsURLConnection connect = (HttpsURLConnection)url.openConnection();
             connect.connect();
             Certificate[] certs = connect.getServerCertificates();
@@ -487,7 +491,7 @@ public final class Cas {
     private boolean loginHelper(char[] username, char[] password) throws IOException, WrongLoginException {
         
         // get three hidden fields, and cookies from initial Login Page
-        Response loginPageResp = Jsoup.connect(LOGIN).execute();
+        Response loginPageResp = Jsoup.connect(HOKIESPA_LOGIN).execute();
 
         // save JSESSION cookie from the LOGIN URL's response
         cookies = loginPageResp.cookies();
@@ -520,12 +524,12 @@ public final class Cas {
         // enter in the hidden fields as well as username and pasword --
         // press submit, USE GET METHOD!!!
         Response resp = Jsoup
-                .connect(LOGIN)
+                .connect(HOKIESPA_LOGIN)
                 .data(hiddenFields)
-                .cookie("JSESSIONID", cookies.get("JSESSIONID"))
+                .cookies(cookies)
                 .method(Method.GET)
                 .header("Content-Type", "application/x-www-form-urlencoded")
-                .referrer(LOGIN)
+                .referrer(HOKIESPA_LOGIN)
                 .userAgent(AGENTS)
                 .execute();
 
@@ -563,7 +567,7 @@ public final class Cas {
 
         active = true;
         refreshSession = false;
-
+        //System.out.println(loginCheck);
         return true;
     }
 
@@ -612,7 +616,7 @@ public final class Cas {
      * 
      * @return cookies the cookies that have been pulled from Cas, if a login has occurred. Otherwise, returns null
      */
-    protected Map<String, String> getCookies() {
+    public Map<String, String> getCookies() {
         
         refreshSession = true;
         return cookies;
