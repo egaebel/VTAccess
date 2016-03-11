@@ -7,6 +7,7 @@ NOTE: JSOUP MUST BE ON THE BUILDPATH WHEN BUILDING THIS!
 
 
 Licensing information:
+
 The MIT License (MIT)
 opyright (c) 2016 Ethan Gaebel
 
